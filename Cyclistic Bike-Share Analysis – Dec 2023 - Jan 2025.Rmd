@@ -1,0 +1,116 @@
+---
+title: "Cyclistic Bike-Share Analysis – Dec 2023 - Jan 2025"
+author: "Nikki Carlson"
+output: html_document
+---
+
+# Cyclistic Bike-Share Analysis Case Study
+
+## 1. Business Task
+
+The goal of this project is to analyze how annual members and casual riders use Cyclistic bikes differently. These insights will inform a marketing strategy to convert casual riders into annual members, which the company has identified as key to future growth.
+
+## 2. Data Description
+
+The dataset includes Cyclistic bike trip data from January through December 2024. This data was provided by Motivate International Inc. and includes ride start and end times, rider type (member or casual), bike type, and station information.
+
+Personally identifiable information has been excluded to preserve privacy. The dataset was processed in R, summarized, and visualized using Tableau.
+
+## 3. Data Cleaning & Processing
+
+Data was prepared in R using the tidyverse and lubridate packages. Monthly CSV files were merged, cleaned, and transformed with additional columns such as `ride_length`, `season`, `hour`, and `day_of_week`.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+
+files <- list.files("data/summary_files/", full.names = TRUE, pattern = "*.csv")
+bike_data <- files %>%
+  map_dfr(read_csv) %>%
+  mutate(
+    started_at = ymd_hms(started_at),
+    ended_at = ymd_hms(ended_at),
+    ride_length = as.numeric(difftime(ended_at, started_at, units = "mins")),
+    day_of_week = weekdays(started_at),
+    hour = hour(started_at),
+    season = case_when(
+      month(started_at) %in% c(12, 1, 2) ~ "Winter",
+      month(started_at) %in% c(3, 4, 5) ~ "Spring",
+      month(started_at) %in% c(6, 7, 8) ~ "Summer",
+      TRUE ~ "Fall"
+    )
+  )
+
+write_csv(bike_data, "data/cleaned_bike_data.csv")
+```
+
+```{r eval=FALSE}
+# Sample function: Weekly ride summary for Tableau
+create_time_summary <- function(df, time_unit = "week", export_name = NULL) {
+  summary_df <- df %>%
+    mutate(period = floor_date(started_at, unit = time_unit)) %>%
+    group_by(period, member_casual) %>%
+    summarise(
+      total_rides = n(),
+      avg_ride_length = round(mean(ride_length, na.rm = TRUE), 2),
+      .groups = "drop"
+    )
+  if (!is.null(export_name)) write_csv(summary_df, paste0(export_name, ".csv"))
+  return(summary_df)
+}
+
+# Example use:
+create_time_summary(bike_data, "week", "tableau_weekly_summary")
+```
+
+## 4. Analysis Summary
+
+The analysis focused on comparing usage patterns between members and casual riders across several dimensions:
+
+- Rides by day of the week
+- Hourly ride trends (12-hour clock format)
+- Ride duration by user type (capped at 60 min for clarity)
+- Seasonal ride volume
+- Monthly ride trends
+- Bike type usage via donut chart
+
+## 5. Tableau Visualization
+
+The data was visualized using Tableau to support key business insights.
+
+### Dashboard Preview
+
+![Cyclistic Dashboard](C:\Users\nkc06\OneDrive\Pictures\Screenshots\Tablaeu_Dashboard_Cyclist_Data.png)
+
+### View the Interactive Version
+
+👉 [Cyclistic User Behavior Analysis 2024 – Tableau Public](https://public.tableau.com/app/profile/nikki.carlson2355/viz/CyclisticUsageInsights/CyclisticUserBehaviorAnalysis2024#1)
+
+## 6. Key Findings
+
+- **Ride Timing**:
+  - Members ride more consistently throughout the week.
+  - Casual riders favor weekends and midday hours.
+
+- **Ride Duration**:
+  - Casual riders tend to take longer rides (especially on weekends).
+  - Members' rides are shorter and more commute-aligned.
+
+- **Bike Type Preference**:
+  - Bike type usage is similar between groups, with slightly higher ebike use among casuals.
+
+- **Seasonal Trends**:
+  - Usage peaks in summer, especially among casual riders.
+  - Members show steadier year-round usage.
+
+## 7. Recommendations
+
+1. **Promote weekend discounts** and loyalty perks to casual riders who show repeat usage, especially during summer.
+2. **Emphasize convenience and cost savings** of short, frequent rides in marketing campaigns.
+3. **Use digital nudges** (e.g., in-app messages or emails) after casual riders take 2+ rides to offer a limited-time membership discount.
+
+## 8. Appendix
+
+- Tableau Public dashboard:  
+  [Cyclistic Usage Insights](https://public.tableau.com/app/profile/nikki.carlson2355/viz/CyclisticUsageInsights/CyclisticUserBehaviorAnalysis2024#1)
+
