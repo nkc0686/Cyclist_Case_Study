@@ -1,2 +1,4 @@
 # Cyclist_Case_Study
 Analysis of fictitious bike share data in Chicago
+This case study analyzes 14 months of trip data from Cyclistic, a fictional bike-share program in Chicago, to identify behavioral differences between casual riders and annual members. Our goal is to uncover actionable insights that support the company’s strategic objective: converting more casual riders into members.
+Key findings show that casual riders primarily use the service on weekends and during midday hours, while members ride more consistently on weekdays during commuting hours. These patterns are most pronounced in summer months. The analysis leverages cleaned ride data and Tableau dashboards featuring time-based trends. Strategic recommendations are provided to improve member acquisition through data-driven marketing.
